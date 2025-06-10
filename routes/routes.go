@@ -1,17 +1,18 @@
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"task-manager/handlers"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func SetupRoutes(app *fiber.App) {
 	//api group
 	api := app.Group("/api")
 
-	//task routes
 	tasks := api.Group("/tasks")
-	tasks.Get("/", handlers.GetTask)
-	tasks.Get("/:id", handlers.GetTask)
+	tasks.Get("/", handlers.GetTasks)    // Get all tasks
+	tasks.Get("/:id", handlers.GetTask)  // Get single task by ID
+	tasks.Post("/", handlers.CreateTask) // Create new task
 
 }

@@ -1,14 +1,16 @@
 package main
 
 import (
+	"log"
+	"os"
+	"task-manager/database"
+	"task-manager/handlers"
+	"task-manager/routes"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
-	"log"
-	"os"
-	"task-manager/database"
-	"task-manager/routes"
 )
 
 func main() {
@@ -19,6 +21,8 @@ func main() {
 
 	// Connect to MongoDB
 	database.Connect()
+
+	handlers.InitHandlers()
 
 	// Create Fiber app
 	app := fiber.New(fiber.Config{
@@ -37,18 +41,9 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New())
 
-	// Health check endpoint
-	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{
-			"status":  "ok",
-			"message": "Task Manager API is running",
-		})
-	})
-
 	// Setup routes
 	routes.SetupRoutes(app)
 
-	// Get port from environment or use default
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"

@@ -2,17 +2,22 @@ package handlers
 
 import (
 	"context"
-	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/v2/bson"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 	"net/http"
 	"task-manager/database"
 	"task-manager/models"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-var taskCollection = database.GetCollection("tasks")
+var taskCollection *mongo.Collection
+
+func InitHandlers() {
+	taskCollection = database.GetCollection("tasks")
+}
 
 // get all tasks
 func GetTasks(c *fiber.Ctx) error {
