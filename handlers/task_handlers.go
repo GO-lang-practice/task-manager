@@ -110,3 +110,64 @@ func CreateTask(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusCreated).JSON(task)
 }
+
+// UpdateTask - Update an existing task
+func UpdateTask(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	id := c.Params("id")
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid task ID",
+		})
+	}
+
+	var request models.UpdateTaskRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"updated_at": time.Now(),
+		},
+	}
+
+	if request.Title != "" {
+		update["$set"].(bson.M)["title"] = request.Title
+	}
+	if request.Description != "" {
+		update["$set"].(bson.M)["description"] = request.Description
+	}
+	if request.Completed != nil {
+		update["$set"].(bson.M)["completed"] = *request.Completed
+	}
+
+	result, err := taskCollection.UpdateOne(ctx, bson.M{"_id": objectId}, update)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to update task",
+		})
+	}
+
+	if result.MatchedCount == 0 {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"error": "Task not found",
+		})
+	}
+
+	// Fetch and return updated task
+	var updatedTask models.Task
+	err = taskCollection.FindOne(ctx, bson.M{"_id": objectId}).Decode(&updatedTask)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch updated task",
+		})
+	}
+
+	return c.JSON(updatedTask)
+}

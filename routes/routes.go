@@ -14,5 +14,5 @@ func SetupRoutes(app *fiber.App) {
 	tasks.Get("/", handlers.GetTasks)    // Get all tasks
 	tasks.Get("/:id", handlers.GetTask)  // Get single task by ID
 	tasks.Post("/", handlers.CreateTask) // Create new task
-
+	
 }
